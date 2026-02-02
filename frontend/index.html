@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FCOS - File Conversion & Order System</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">
+                <h1>📊 FCOS</h1>
+                <span class="subtitle">File Conversion & Order System</span>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Upload Section -->
+            <section class="card upload-section">
+                <h2>📁 Upload PO Data File</h2>
+                <div class="upload-area" id="uploadArea">
+                    <div class="upload-icon">📤</div>
+                    <p>ลากไฟล์มาวางที่นี่ หรือคลิกเพื่อเลือกไฟล์</p>
+                    <p class="file-types">รองรับไฟล์ .xlsx, .xls (ขนาดไม่เกิน 10MB)</p>
+                    <input type="file" id="fileInput" accept=".xlsx,.xls" hidden>
+                </div>
+                <div class="upload-progress" id="uploadProgress" style="display: none;">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                    <span id="progressText">กำลังอัพโหลด...</span>
+                </div>
+            </section>
+
+            <!-- Current File Info -->
+            <section class="card file-info-section" id="fileInfoSection" style="display: none;">
+                <h2>📋 ข้อมูลไฟล์ปัจจุบัน</h2>
+                <div class="file-info">
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <label>ชื่อไฟล์:</label>
+                            <span id="currentFileName">-</span>
+                        </div>
+                        <div class="info-item">
+                            <label>วันที่อัพโหลด:</label>
+                            <span id="currentUploadDate">-</span>
+                        </div>
+                        <div class="info-item">
+                            <label>จำนวนรายการ:</label>
+                            <span id="currentRecordCount">-</span>
+                        </div>
+                        <div class="info-item">
+                            <label>วันที่ส่ง:</label>
+                            <span id="currentDeliveryDate">-</span>
+                        </div>
+                        <div class="info-item full-width">
+                            <label>ลูกค้า:</label>
+                            <span id="currentCustomers">-</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Export Buttons -->
+                <div class="export-buttons">
+                    <h3>📥 Download Reports</h3>
+                    <div class="button-group">
+                        <button class="btn btn-primary" id="btnIssueDO">
+                            <span class="btn-icon">📄</span>
+                            <span class="btn-text">
+                                <strong>Issue D/O</strong>
+                                <small>Issue Delivery Order</small>
+                            </span>
+                        </button>
+                        <button class="btn btn-secondary" id="btnDeliveryDaily">
+                            <span class="btn-icon">📊</span>
+                            <span class="btn-text">
+                                <strong>Delivery Daily Report</strong>
+                                <small>รายงานการส่งประจำวัน</small>
+                            </span>
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Revision History -->
+            <section class="card revision-section">
+                <h2>📚 Revision History</h2>
+                <div class="revision-list" id="revisionList">
+                    <p class="empty-message">ยังไม่มีประวัติการอัพโหลด</p>
+                </div>
+            </section>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>FCOS v1.0.0 | © 2026</p>
+        </footer>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="toast" id="toast">
+        <span class="toast-icon"></span>
+        <span class="toast-message"></span>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay" style="display: none;">
+        <div class="spinner"></div>
+        <p>กำลังประมวลผล...</p>
+    </div>
+
+    <script src="js/app.js"></script>
+</body>
+</html>
