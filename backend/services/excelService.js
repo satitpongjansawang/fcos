@@ -171,17 +171,32 @@ class ExcelService {
             cell.font = { bold: true };
         });
 
+        // Group by CUSTOMER_PARTS_NO + NITERRA_PARTS_NO + SHIP_TO
         const merged = {};
         parseResult.data.forEach(item => {
-            const key = [item.TEXT10||item.CUSTOMER_CODE, item.DO_NO, item.CUSTOMER_PARTS_NO, item.NITERRA_PARTS_NO].join('|');
-            if (!merged[key]) merged[key] = { ...item, qty: 0 };
+            const key = [
+                item.TEXT10 || item.CUSTOMER_CODE,
+                item.DO_NO,
+                item.CUSTOMER_PARTS_NO,
+                item.NITERRA_PARTS_NO,
+                item.SHIP_TO || ''  // เพิ่ม SHIP_TO ในการจัดกลุ่ม
+            ].join('|');
+            
+            if (!merged[key]) {
+                merged[key] = { 
+                    ...item, 
+                    qty: 0,
+                    customer: item.TEXT10 || item.CUSTOMER_CODE,
+                    shipTo: item.SHIP_TO || ''
+                };
+            }
             merged[key].qty += parseInt(item.QTY) || 0;
         });
 
         let currentRow = 9;
         Object.values(merged).forEach(item => {
             const row = ws.getRow(currentRow);
-            row.getCell(2).value = item.TEXT10 || item.CUSTOMER_CODE;
+            row.getCell(2).value = item.customer;
             row.getCell(3).value = item.DO_NO;
             row.getCell(5).value = item.DELIVERY_DATE;
             row.getCell(8).value = item.CUSTOMER_PARTS_NO;
@@ -189,7 +204,7 @@ class ExcelService {
             row.getCell(13).value = item.qty;
             row.getCell(16).value = item.PLAN_CODE;
             row.getCell(17).value = item.LOCATION;
-            row.getCell(34).value = item.SHIP_TO;
+            row.getCell(34).value = item.shipTo;  // แสดง SHIP_TO ที่ใช้จัดกลุ่ม
             currentRow++;
         });
 
