@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FCOS - ForeCasting & Ordering of SIAM</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <div class="logo">
+                <h1>📊 FCOS</h1>
+                <span class="subtitle">ForeCasting & Ordering of SIAM</span>
+            </div>
+            <nav class="nav-menu">
+                <a href="/" class="nav-btn active">📁 D/O Reports</a>
+                <a href="/fluctuation" class="nav-btn">📈 Fluctuation</a>
+            </nav>
+        </header>
+
+        <main class="main-content">
+            <section class="card upload-section">
+                <h2>📁 Upload PO Data File</h2>
+                <div class="upload-area" id="uploadArea">
+                    <div class="upload-icon">📤</div>
+                    <p>ลากไฟล์มาวางที่นี่ หรือคลิกเพื่อเลือกไฟล์</p>
+                    <p class="file-types">รองรับไฟล์ .xlsx, .xls (ขนาดไม่เกิน 10MB)</p>
+                    <input type="file" id="fileInput" accept=".xlsx,.xls" hidden>
+                </div>
+                <div class="upload-progress" id="uploadProgress" style="display: none;">
+                    <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+                    <span id="progressText">กำลังอัพโหลด...</span>
+                </div>
+            </section>
+
+            <section class="card file-info-section" id="fileInfoSection" style="display: none;">
+                <h2>📋 ข้อมูลไฟล์ปัจจุบัน</h2>
+                <div class="file-info">
+                    <div class="info-grid">
+                        <div class="info-item"><label>ชื่อไฟล์</label><span id="infoFileName">-</span></div>
+                        <div class="info-item"><label>จำนวนแถว</label><span id="infoRows">-</span></div>
+                        <div class="info-item"><label>จำนวน DO</label><span id="infoDO">-</span></div>
+                        <div class="info-item"><label>จำนวน Customer</label><span id="infoCustomer">-</span></div>
+                    </div>
+                    <div class="button-group">
+                        <button class="btn btn-primary" id="btnIssueDO">📄 Export Issue D/O</button>
+                        <button class="btn btn-secondary" id="btnDeliveryDaily">📊 Export Delivery Daily</button>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card revision-section">
+                <h2>🕒 Revision History</h2>
+                <div class="revision-list" id="revisionList">
+                    <p class="empty-text">ยังไม่มีประวัติการอัพโหลด</p>
+                </div>
+            </section>
+        </main>
+
+        <footer class="footer"><p>FCOS v2.0.0 | © 2026</p></footer>
+    </div>
+
+    <div class="toast" id="toast"><span class="toast-icon"></span><span class="toast-message"></span></div>
+    <div class="loading-overlay" id="loadingOverlay" style="display: none;"><div class="spinner"></div><p>กำลังประมวลผล...</p></div>
+
+    <script src="js/app.js"></script>
+</body>
+</html>

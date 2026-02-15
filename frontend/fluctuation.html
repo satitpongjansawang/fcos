@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FCOS - Fluctuation</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root { --bg:#050f0f; --surface:#0b1c1b; --card:#0f2423; --border:#1a3c3a; --accent:#00c9b7; --accentBright:#00f5df; --accentDim:#006A6C; --text:#e4f2f0; --textSoft:#94b8b5; --textDim:#527a77; --red:#ff6b6b; --green:#4ade80; --yellow:#fbbf24; }
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:'Sarabun',sans-serif;min-height:100vh}
+.header{background:linear-gradient(135deg,var(--accentDim) 0%,#004d4f 60%,#002b2b 100%);padding:14px 24px;display:flex;align-items:center;gap:14px;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:50}
+.header-icon{width:38px;height:38px;border-radius:10px;background:rgba(0,245,223,0.12);border:1px solid rgba(0,245,223,0.2);display:flex;align-items:center;justify-content:center;font-size:18px}
+.header-title{font-size:17px;font-weight:800;letter-spacing:-0.03em}
+.header-sub{font-size:10px;color:rgba(255,255,255,0.45);font-weight:500;letter-spacing:0.04em}
+.nav-menu{margin-left:auto;display:flex;gap:6px}
+.nav-btn{display:inline-flex;align-items:center;gap:5px;padding:6px 14px;border-radius:7px;text-decoration:none;font-size:11px;font-weight:600;color:rgba(255,255,255,0.65);background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);transition:all 0.2s}
+.nav-btn:hover{background:rgba(255,255,255,0.12);color:white}
+.nav-btn.active{background:rgba(0,201,183,0.2);color:var(--accentBright);border-color:rgba(0,201,183,0.3)}
+.body{padding:16px 20px;max-width:1500px;margin:0 auto}
+.card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:12px}
+.card-title{font-size:11px;font-weight:800;color:var(--textSoft);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:10px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
+.stat{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px 14px;display:flex;align-items:center;gap:10px}
+.stat-icon{font-size:20px}
+.stat-label{font-size:10px;color:var(--textDim);font-weight:700;text-transform:uppercase;letter-spacing:0.06em}
+.stat-val{font-size:15px;font-weight:800;font-family:'DM Mono',monospace}
+.filters{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.filter-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.filter-label{font-size:11px;font-weight:800;color:var(--textSoft);text-transform:uppercase;letter-spacing:0.06em}
+.filter-search{width:100%;padding:6px 10px;border-radius:6px;font-size:11px;border:1px solid var(--border);background:var(--surface);color:var(--text);margin-bottom:8px;outline:none;font-family:inherit}
+.chip-area{display:flex;flex-wrap:wrap;gap:4px;max-height:130px;overflow-y:auto}
+.chip{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;user-select:none;white-space:nowrap;border:1px solid var(--border);background:transparent;color:var(--textDim);transition:all 0.12s}
+.chip.on{border-color:var(--accent);background:rgba(0,201,183,0.09);color:var(--accent)}
+.chip-dot{width:6px;height:6px;border-radius:50%;background:var(--textDim)}
+.chip.on .chip-dot{background:var(--accent)}
+.mini-btn{font-size:9px;padding:2px 6px;border-radius:3px;border:1px solid var(--border);background:transparent;color:var(--textDim);cursor:pointer;font-family:inherit}
+.mini-btn:hover{background:rgba(255,255,255,0.05);color:var(--text)}
+.tabs{display:flex;gap:6px;margin-bottom:14px}
+.tab{padding:7px 18px;border-radius:7px;font-size:12px;font-weight:700;border:none;cursor:pointer;background:rgba(255,255,255,0.04);color:var(--textDim);transition:all 0.12s;font-family:inherit}
+.tab.on{background:var(--accent);color:var(--bg)}
+.chart-wrap{position:relative;height:420px;margin-bottom:8px}
+.chart-wrap-sm{position:relative;height:320px;margin-bottom:8px}
+.dropzone{border:2px dashed var(--border);border-radius:12px;padding:56px 24px;text-align:center;cursor:pointer;transition:all 0.2s}
+.dropzone:hover,.dropzone.over{border-color:var(--accent);background:rgba(0,201,183,0.04)}
+.dropzone-icon{font-size:52px;margin-bottom:12px;opacity:0.6}
+.dropzone-text{font-size:17px;font-weight:700;margin-bottom:8px}
+.dropzone-hint{font-size:12px;color:var(--textDim);line-height:1.6}
+.error-bar{padding:10px 20px;background:rgba(255,107,107,0.08);color:var(--red);font-size:12px;border-top:1px solid var(--border)}
+.empty-state{text-align:center;padding:48px;color:var(--textDim)}
+.empty-state-icon{font-size:36px;margin-bottom:12px}
+table{width:100%;border-collapse:separate;border-spacing:0;font-size:11px;font-family:'DM Mono',monospace}
+th{background:rgba(0,201,183,0.08);color:var(--accent);padding:7px 10px;font-weight:800;font-size:10px;border-bottom:2px solid var(--border);white-space:nowrap;text-align:right}
+th:first-child,th:nth-child(2){text-align:left}
+td{padding:6px 10px;border-bottom:1px solid var(--border);text-align:right}
+td:first-child{font-weight:700;color:var(--accentBright);text-align:left;white-space:nowrap}
+td:nth-child(2){color:var(--textSoft);text-align:left;white-space:nowrap}
+tr:hover td{background:rgba(0,201,183,0.03)}
+.total-row td{border-top:2px solid rgba(0,201,183,0.25);font-weight:900;color:var(--accent)}
+.pct-up{color:var(--green);font-weight:700;font-family:'DM Mono',monospace}
+.pct-down{color:var(--red);font-weight:700;font-family:'DM Mono',monospace}
+.pct-zero{color:var(--textDim);font-weight:700;font-family:'DM Mono',monospace}
+.th-pct{background:rgba(251,191,36,0.08)!important;color:var(--yellow)!important}
+.file-badge{font-size:10px;color:var(--textDim);font-family:'DM Mono',monospace;background:rgba(0,0,0,0.2);padding:3px 8px;border-radius:4px}
+.reset-btn{padding:5px 10px;border-radius:5px;font-size:10px;font-weight:700;border:1px solid var(--border);background:rgba(255,255,255,0.04);color:var(--textSoft);cursor:pointer;font-family:inherit}
+.footer{text-align:center;padding:14px 0 20px;color:var(--textDim);font-size:10px}
+.hidden{display:none!important}
+@media(max-width:768px){.stats{grid-template-columns:repeat(2,1fr)}.filters{grid-template-columns:1fr}.nav-menu{flex-direction:column}}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-icon">📈</div>
+  <div>
+    <div class="header-title">FCOS <span style="color:var(--accentBright)">Fluctuation</span></div>
+    <div class="header-sub">Forecasting Order Quantity Analysis</div>
+  </div>
+  <nav class="nav-menu">
+    <a href="/" class="nav-btn">📁 D/O Reports</a>
+    <a href="/fluctuation" class="nav-btn active">📈 Fluctuation</a>
+  </nav>
+  <div id="fileInfo" class="hidden" style="display:flex;align-items:center;gap:10px;margin-left:12px">
+    <span class="file-badge" id="fileNameBadge"></span>
+    <button class="reset-btn" onclick="resetAll()">✕ Reset</button>
+  </div>
+</div>
+
+<div class="body">
+  <!-- Upload -->
+  <div id="uploadSection">
+    <div class="card" style="padding:0;overflow:hidden">
+      <div class="dropzone" id="dropzone" onclick="document.getElementById('fileInput').click()">
+        <input type="file" id="fileInput" accept=".csv,.xlsx,.xls" style="display:none" onchange="handleFile(this.files[0])">
+        <div class="dropzone-icon" id="dropIcon">📂</div>
+        <div class="dropzone-text" id="dropText">ลาก CSV / Excel ไฟล์มาวางที่นี่</div>
+        <div class="dropzone-hint">รองรับ: CUSTOMER ITEM CODE, ITEM CODE, FC REVISION ID + เดือน YYYYMM</div>
+      </div>
+      <div id="errorBar" class="error-bar hidden"></div>
+    </div>
+  </div>
+
+  <!-- Dashboard -->
+  <div id="dashboard" class="hidden">
+    <div class="stats">
+      <div class="stat"><span class="stat-icon">📦</span><div><div class="stat-label">Products</div><div class="stat-val" id="statProducts">0</div></div></div>
+      <div class="stat"><span class="stat-icon">🔄</span><div><div class="stat-label">Revisions</div><div class="stat-val" id="statRevisions">0</div></div></div>
+      <div class="stat"><span class="stat-icon">📊</span><div><div class="stat-label">Data Points</div><div class="stat-val" id="statPoints">0</div></div></div>
+      <div class="stat"><span class="stat-icon">📅</span><div><div class="stat-label">Period</div><div class="stat-val" id="statPeriod">-</div></div></div>
+    </div>
+
+    <div class="filters">
+      <div class="card">
+        <div class="filter-header">
+          <span class="filter-label">Products (<span id="selProdCount">0</span>/<span id="totalProdCount">0</span>)</span>
+          <div style="display:flex;gap:4px"><button class="mini-btn" onclick="selectAllProducts()">All</button><button class="mini-btn" onclick="clearProducts()">None</button></div>
+        </div>
+        <input class="filter-search" placeholder="🔍 ค้นหา product..." oninput="renderProductChips(this.value)">
+        <div class="chip-area" id="productChips"></div>
+      </div>
+      <div class="card">
+        <div class="filter-header">
+          <span class="filter-label">FC Revisions (<span id="selRevCount">0</span>/<span id="totalRevCount">0</span>)</span>
+          <div style="display:flex;gap:4px"><button class="mini-btn" onclick="selectAllRevisions()">All</button><button class="mini-btn" onclick="clearRevisions()">None</button><button class="mini-btn" onclick="selectLastRevisions(5)">Last 5</button></div>
+        </div>
+        <input class="filter-search" placeholder="🔍 ค้นหา revision..." oninput="renderRevisionChips(this.value)">
+        <div class="chip-area" id="revisionChips"></div>
+      </div>
+    </div>
+
+    <div class="tabs">
+      <button class="tab on" id="tabRevision" onclick="setView('revision')">📈 By Revision</button>
+      <button class="tab" id="tabCompare" onclick="setView('compare')">🔀 Compare Products (% Change)</button>
+    </div>
+
+    <div id="chartArea">
+      <div id="revisionView">
+        <div class="card"><div class="card-title">Forecasting Qty by Month & Revision</div><div class="chart-wrap"><canvas id="chartRevision"></canvas></div></div>
+      </div>
+      <div id="compareView" class="hidden">
+        <div class="card"><div class="card-title">Quantity Comparison between Products</div><div class="chart-wrap"><canvas id="chartCompareQty"></canvas></div></div>
+        <div class="card"><div class="card-title">% Change (Month-over-Month)</div><div class="chart-wrap-sm"><canvas id="chartComparePct"></canvas></div></div>
+      </div>
+      <div class="card"><div class="card-title">Summary — Total Qty per Revision & % Change</div><div style="overflow-x:auto" id="summaryTable"></div></div>
+    </div>
+
+    <div id="emptyState" class="card empty-state hidden">
+      <div class="empty-state-icon">📋</div>
+      <div style="font-size:13px">กรุณาเลือกอย่างน้อย 1 product และ 1 revision เพื่อแสดงกราฟ</div>
+    </div>
+  </div>
+</div>
+
+<div class="footer">FCOS — ForeCasting & Ordering of SIAM • Fluctuation Module</div>
+
+<script>
+const COLORS=["#00c9b7","#ff6b6b","#fbbf24","#74c0fc","#a78bfa","#4ade80","#fb923c","#f472b6","#67e8f9","#c084fc","#facc15","#38bdf8","#f87171","#34d399","#e879f9"];
+let allData=[],products=[],revisions=[],monthCols=[],selProducts=[],selRevisions=[],viewMode="revision";
+let chartRev=null,chartQty=null,chartPct=null;
+
+// Dropzone events
+const dz=document.getElementById('dropzone');
+dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('over')});
+dz.addEventListener('dragleave',()=>dz.classList.remove('over'));
+dz.addEventListener('drop',e=>{e.preventDefault();dz.classList.remove('over');handleFile(e.dataTransfer.files[0])});
+
+function handleFile(file){
+  if(!file)return;
+  document.getElementById('dropIcon').textContent='⏳';
+  document.getElementById('dropText').textContent='กำลังประมวลผล...';
+  document.getElementById('errorBar').classList.add('hidden');
+  setTimeout(()=>{
+    try{
+      const reader=new FileReader();
+      const ext=file.name.split('.').pop().toLowerCase();
+      if(ext==='csv'){
+        reader.onload=e=>{
+          try{
+            const text=e.target.result;
+            const lines=text.split('\n').filter(l=>l.trim());
+            const headers=lines[0].split(',').map(h=>h.trim().replace(/^"|"$/g,''));
+            const rows=lines.slice(1).map(line=>{
+              const vals=line.split(',').map(v=>v.trim().replace(/^"|"$/g,''));
+              const o={};headers.forEach((h,i)=>o[h]=vals[i]||'');return o;
+            });
+            processData(rows,headers,file.name);
+          }catch(err){showError(err.message)}
+        };
+        reader.readAsText(file);
+      } else {
+        reader.onload=e=>{
+          try{
+            const wb=XLSX.read(e.target.result,{type:'array'});
+            const ws=wb.Sheets[wb.SheetNames[0]];
+            const raw=XLSX.utils.sheet_to_json(ws,{header:1,defval:''});
+            if(raw.length<2)throw new Error('No data');
+            const headers=raw[0].map(String);
+            const rows=raw.slice(1).filter(r=>r[0]&&String(r[0]).toUpperCase()!=='GRAND TOTAL').map(r=>{const o={};headers.forEach((h,i)=>o[h]=r[i]??'');return o});
+            processData(rows,headers,file.name);
+          }catch(err){showError(err.message)}
+        };
+        reader.readAsArrayBuffer(file);
+      }
+    }catch(err){showError(err.message)}
+  },100);
+}
+
+function processData(rows,headers,fileName){
+  monthCols=headers.filter(h=>/^\d{6}$/.test(h.trim()));
+  const metaCols=headers.filter(h=>!/^\d{6}$/.test(h.trim())&&h.trim().toUpperCase()!=='GRAND TOTAL');
+  const find=ps=>metaCols.find(c=>ps.some(p=>c.toUpperCase().includes(p)))||'';
+  const ciCol=find(['CUSTOMER ITEM'])||metaCols[0]||'';
+  const itCol=find(['ITEM CODE'])||metaCols[1]||'';
+  const rvCol=find(['REVISION','FC REVISION'])||metaCols[5]||'';
+
+  allData=[];const pMap=new Map(),rSet=new Set();
+  rows.forEach(row=>{
+    const pid=String(row[ciCol]||'').trim(),item=String(row[itCol]||'').trim(),rev=String(row[rvCol]||'').trim();
+    if(!pid||!rev)return;
+    if(!pMap.has(pid))pMap.set(pid,{id:pid,itemCode:item});
+    rSet.add(rev);
+    monthCols.forEach(mc=>{
+      const v=row[mc];const qty=typeof v==='number'?v:parseFloat(String(v).replace(/,/g,''));
+      if(!isNaN(qty)&&qty!==0)allData.push({product_id:pid,item_code:item,revision:rev,month:mc,monthLabel:mc.substring(0,4)+'-'+mc.substring(4,6),qty});
+    });
+  });
+  products=Array.from(pMap.values());
+  revisions=[...rSet].filter(Boolean).sort();
+  if(!allData.length){showError('No valid data found');return}
+
+  selProducts=products.slice(0,2).map(p=>p.id);
+  selRevisions=revisions.slice(-3);
+
+  document.getElementById('uploadSection').classList.add('hidden');
+  document.getElementById('dashboard').classList.remove('hidden');
+  document.getElementById('fileInfo').classList.remove('hidden');
+  document.getElementById('fileInfo').style.display='flex';
+  document.getElementById('fileNameBadge').textContent=fileName;
+
+  document.getElementById('statProducts').textContent=products.length;
+  document.getElementById('statRevisions').textContent=revisions.length;
+  document.getElementById('statPoints').textContent=allData.length.toLocaleString();
+  document.getElementById('statPeriod').textContent=monthCols[0]+'→'+monthCols[monthCols.length-1];
+  document.getElementById('totalProdCount').textContent=products.length;
+  document.getElementById('totalRevCount').textContent=revisions.length;
+
+  renderProductChips('');renderRevisionChips('');
+  updateCharts();
+}
+
+function showError(msg){
+  document.getElementById('dropIcon').textContent='📂';
+  document.getElementById('dropText').textContent='ลาก CSV / Excel ไฟล์มาวางที่นี่';
+  const bar=document.getElementById('errorBar');bar.textContent='⚠ '+msg;bar.classList.remove('hidden');
+}
+
+function resetAll(){
+  allData=[];products=[];revisions=[];monthCols=[];selProducts=[];selRevisions=[];
+  if(chartRev){chartRev.destroy();chartRev=null}
+  if(chartQty){chartQty.destroy();chartQty=null}
+  if(chartPct){chartPct.destroy();chartPct=null}
+  document.getElementById('uploadSection').classList.remove('hidden');
+  document.getElementById('dashboard').classList.add('hidden');
+  document.getElementById('fileInfo').classList.add('hidden');
+  document.getElementById('dropIcon').textContent='📂';
+  document.getElementById('dropText').textContent='ลาก CSV / Excel ไฟล์มาวางที่นี่';
+  document.getElementById('fileInput').value='';
+}
+
+function renderProductChips(search){
+  const q=search.toLowerCase();
+  const filtered=q?products.filter(p=>p.id.toLowerCase().includes(q)||p.itemCode.toLowerCase().includes(q)):products;
+  document.getElementById('productChips').innerHTML=filtered.map(p=>{
+    const on=selProducts.includes(p.id);
+    const ci=products.indexOf(p)%COLORS.length;
+    return `<div class="chip${on?' on':''}" onclick="toggleProduct('${p.id}')"><span class="chip-dot" style="${on?'background:'+COLORS[ci]:''}"></span>${p.id}</div>`;
+  }).join('');
+  document.getElementById('selProdCount').textContent=selProducts.length;
+}
+
+function renderRevisionChips(search){
+  const filtered=search?revisions.filter(r=>r.includes(search)):revisions;
+  document.getElementById('revisionChips').innerHTML=filtered.map(r=>{
+    const on=selRevisions.includes(r);
+    return `<div class="chip${on?' on':''}" onclick="toggleRevision('${r}')">${r}</div>`;
+  }).join('');
+  document.getElementById('selRevCount').textContent=selRevisions.length;
+}
+
+function toggleProduct(pid){selProducts=selProducts.includes(pid)?selProducts.filter(v=>v!==pid):[...selProducts,pid];renderProductChips(document.querySelector('#productChips')?.closest('.card')?.querySelector('.filter-search')?.value||'');updateCharts()}
+function toggleRevision(rev){selRevisions=selRevisions.includes(rev)?selRevisions.filter(v=>v!==rev):[...selRevisions,rev];renderRevisionChips(document.querySelectorAll('.filter-search')[1]?.value||'');updateCharts()}
+function selectAllProducts(){selProducts=products.map(p=>p.id);renderProductChips('');updateCharts()}
+function clearProducts(){selProducts=[];renderProductChips('');updateCharts()}
+function selectAllRevisions(){selRevisions=[...revisions];renderRevisionChips('');updateCharts()}
+function clearRevisions(){selRevisions=[];renderRevisionChips('');updateCharts()}
+function selectLastRevisions(n){selRevisions=revisions.slice(-n);renderRevisionChips('');updateCharts()}
+
+function setView(mode){
+  viewMode=mode;
+  document.getElementById('tabRevision').className='tab'+(mode==='revision'?' on':'');
+  document.getElementById('tabCompare').className='tab'+(mode==='compare'?' on':'');
+  document.getElementById('revisionView').classList.toggle('hidden',mode!=='revision');
+  document.getElementById('compareView').classList.toggle('hidden',mode!=='compare');
+  updateCharts();
+}
+
+function pctBadge(val){
+  if(val==null||isNaN(val))return'<span class="pct-zero">—</span>';
+  const cls=val>0?'pct-up':val<0?'pct-down':'pct-zero';
+  const arrow=val>0?'▲':val<0?'▼':'●';
+  return `<span class="${cls}">${arrow} ${Math.abs(val).toFixed(1)}%</span>`;
+}
+
+function updateCharts(){
+  const show=selProducts.length>0&&selRevisions.length>0;
+  document.getElementById('chartArea').classList.toggle('hidden',!show);
+  document.getElementById('emptyState').classList.toggle('hidden',show);
+  if(!show)return;
+
+  if(viewMode==='revision') updateRevisionChart();
+  else updateCompareCharts();
+  updateSummaryTable();
+}
+
+function updateRevisionChart(){
+  const filtered=allData.filter(d=>selProducts.includes(d.product_id)&&selRevisions.includes(d.revision));
+  const map=new Map();
+  filtered.forEach(d=>{if(!map.has(d.month))map.set(d.month,{label:d.monthLabel});const k=selProducts.length>1?d.product_id+' | '+d.revision:d.revision;map.get(d.month)[k]=(map.get(d.month)[k]||0)+d.qty});
+  const sorted=[...map.entries()].sort((a,b)=>a[0].localeCompare(b[0]));
+  const labels=sorted.map(([,v])=>v.label);
+
+  const datasets=[];let ci=0;
+  selProducts.forEach(pid=>{selRevisions.forEach(rev=>{
+    const key=selProducts.length>1?pid+' | '+rev:rev;
+    datasets.push({label:key,data:sorted.map(([,v])=>v[key]||null),borderColor:COLORS[ci%COLORS.length],backgroundColor:COLORS[ci%COLORS.length]+'30',borderWidth:2,pointRadius:3,tension:0.3,spanGaps:true});
+    ci++;
+  })});
+
+  if(chartRev)chartRev.destroy();
+  chartRev=new Chart(document.getElementById('chartRevision'),{type:'line',data:{labels,datasets},options:chartOpts('Qty')});
+}
+
+function updateCompareCharts(){
+  const filtered=allData.filter(d=>selProducts.includes(d.product_id)&&selRevisions.includes(d.revision));
+  const map=new Map();
+  filtered.forEach(d=>{if(!map.has(d.month))map.set(d.month,{label:d.monthLabel});const qk=d.product_id+'_qty';map.get(d.month)[qk]=(map.get(d.month)[qk]||0)+d.qty});
+  const sorted=[...map.entries()].sort((a,b)=>a[0].localeCompare(b[0]));
+
+  // Pct change
+  for(let i=1;i<sorted.length;i++){
+    selProducts.forEach(pid=>{const c=sorted[i][1][pid+'_qty']||0,p=sorted[i-1][1][pid+'_qty']||0;sorted[i][1][pid+'_pct']=p?((c-p)/p)*100:(c?100:0)});
+  }
+
+  const labels=sorted.map(([,v])=>v.label);
+  const qtyDS=selProducts.map((pid,i)=>({label:pid,data:sorted.map(([,v])=>v[pid+'_qty']||null),borderColor:COLORS[i%COLORS.length],backgroundColor:COLORS[i%COLORS.length]+'30',borderWidth:2.5,pointRadius:3,tension:0.3,spanGaps:true}));
+  const pctDS=selProducts.map((pid,i)=>({label:pid+' %',data:sorted.slice(1).map(([,v])=>v[pid+'_pct']||null),borderColor:COLORS[i%COLORS.length],borderWidth:2,borderDash:[6,3],pointRadius:3,tension:0.3,spanGaps:true}));
+
+  if(chartQty)chartQty.destroy();
+  chartQty=new Chart(document.getElementById('chartCompareQty'),{type:'line',data:{labels,datasets:qtyDS},options:chartOpts('Qty')});
+
+  if(chartPct)chartPct.destroy();
+  chartPct=new Chart(document.getElementById('chartComparePct'),{type:'line',data:{labels:labels.slice(1),datasets:pctDS},options:{...chartOpts('%'),scales:{...chartOpts('%').scales,y:{...chartOpts('%').scales.y,ticks:{callback:v=>v.toFixed(0)+'%',color:'#527a77',font:{family:"'DM Mono',monospace",size:9}}}}}});
+}
+
+function chartOpts(yLabel){
+  return{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:{labels:{color:'#94b8b5',font:{family:"'DM Mono',monospace",size:10},usePointStyle:true,pointStyle:'circle'}},tooltip:{backgroundColor:'#0f2423',borderColor:'#1a3c3a',borderWidth:1,titleFont:{family:"'DM Mono',monospace",size:10},bodyFont:{family:"'DM Mono',monospace",size:11},callbacks:{label:ctx=>`${ctx.dataset.label}: ${typeof ctx.parsed.y==='number'?ctx.parsed.y.toLocaleString():ctx.parsed.y}`}}},scales:{x:{ticks:{color:'#527a77',font:{family:"'DM Mono',monospace",size:9},maxRotation:45},grid:{color:'#1a3c3a'}},y:{ticks:{color:'#527a77',font:{family:"'DM Mono',monospace",size:9},callback:v=>v>=1000?(v/1000).toFixed(0)+'k':v},grid:{color:'#1a3c3a'}}}};
+}
+
+function updateSummaryTable(){
+  const rows=selProducts.map(pid=>{
+    const pInfo=products.find(p=>p.id===pid)||{};
+    const totals={};selRevisions.forEach(rev=>{totals[rev]=allData.filter(d=>d.product_id===pid&&d.revision===rev).reduce((s,d)=>s+d.qty,0)});
+    const pcts={};for(let i=1;i<selRevisions.length;i++){const pv=totals[selRevisions[i-1]]||0,cv=totals[selRevisions[i]]||0;pcts[selRevisions[i-1]+'→'+selRevisions[i]]=pv?((cv-pv)/pv)*100:(cv?100:0)}
+    return{pid,itemCode:pInfo.itemCode||'',totals,pcts};
+  });
+
+  let html='<table><thead><tr><th style="text-align:left">Product</th><th style="text-align:left">Item Code</th>';
+  selRevisions.forEach(r=>html+=`<th>${r}</th>`);
+  if(selRevisions.length>1)selRevisions.slice(1).forEach((r,i)=>html+=`<th class="th-pct">Δ% ${selRevisions[i].slice(5)}→${r.slice(5)}</th>`);
+  html+='</tr></thead><tbody>';
+
+  rows.forEach(row=>{
+    html+=`<tr><td>${row.pid}</td><td>${row.itemCode}</td>`;
+    selRevisions.forEach(rev=>html+=`<td style="font-weight:600">${(row.totals[rev]||0).toLocaleString()}</td>`);
+    if(selRevisions.length>1)selRevisions.slice(1).forEach((rev,i)=>{const k=selRevisions[i]+'→'+rev;html+=`<td>${pctBadge(row.pcts[k])}</td>`});
+    html+='</tr>';
+  });
+
+  // Grand total
+  html+='<tr class="total-row"><td colspan="2">GRAND TOTAL</td>';
+  selRevisions.forEach(rev=>{const t=rows.reduce((s,r)=>s+(r.totals[rev]||0),0);html+=`<td>${t.toLocaleString()}</td>`});
+  if(selRevisions.length>1)selRevisions.slice(1).forEach((rev,i)=>{const pv=rows.reduce((s,r)=>s+(r.totals[selRevisions[i]]||0),0),cv=rows.reduce((s,r)=>s+(r.totals[rev]||0),0);html+=`<td>${pctBadge(pv?((cv-pv)/pv)*100:0)}</td>`});
+  html+='</tr></tbody></table>';
+  document.getElementById('summaryTable').innerHTML=html;
+}
+</script>
+</body>
+</html>
